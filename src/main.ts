@@ -17,7 +17,7 @@ nunjucks.configure({
 });
 
 console.log("Generating index.html redirect");
-const index = `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="seconds; url=/1"></head><body>Redirecting to <a href="/1">/1</a></body></html>`;
+const index = `<!DOCTYPE html><html><head><script>window.location.href = "https://scanner.numenmc.me/1";</script></head><body>Redirecting to <a href="/1">/1</a></body></html>`;
 await writeFile(`${CONFIG.outDir}/index.html`, index);
 
 console.log("Generating paginated server list pages");

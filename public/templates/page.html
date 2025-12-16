@@ -81,14 +81,6 @@
             </p>
             Navigate to a specific server by entering its ID below:
         </div>
-        <div style="display: flex; gap: 1em;">
-            <sl-card class="card-basic" style="flex: 1;">
-                <div style="display: flex; gap: 1em;">
-                    <sl-input placeholder="Server#" style="flex: 1;" id="input-srv-id"></sl-input><sl-button
-                        onclick="navToServerId(document.getElementById('input-srv-id').value)">Go to</sl-button>
-                </div>
-            </sl-card>
-        </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2em;" class="list-result">
             {% for server in servers %}
