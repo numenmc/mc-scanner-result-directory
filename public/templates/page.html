@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" class="sl-theme-dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>numenmc.me > mc-scanner results > Page {{ page }}</title>
+
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" type="text/css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/dark.css" />
+    <script type="module"
+        src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/shoelace-autoloader.js"></script>
+
+    <style>
+        @font-face {
+            font-family: "Minecraft";
+            src: url(/minecraft.woff) format("woff");
+        }
+
+        body {
+            font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+
+            background-color: #111;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        .header {
+            padding: 1em;
+            font-size: 1.5em;
+            border-bottom: 1px solid #222;
+        }
+
+        .container {
+            padding: 5em 20em;
+            display: flex;
+            flex-direction: column;
+            gap: 2em;
+        }
+    </style>
+</head>
+
+<body>
+    <sl-dialog label="Player Sample" class="dialog-player-sample">
+        <div class="dialog-player-sample-contents" style="display: flex; flex-direction: column;">
+
+        </div>
+    </sl-dialog>
+
+    <div class="header" style="display: flex; gap: 0.5em; align-items: center; justify-content: center;">
+        <span>mc-scanner results</span>
+        <div style="font-size: 0.75em;">▶</div><span>Page {{ page }}</span>
+        <span>@ <a href="https://numenmc.me">numenmc.me</a></span>
+    </div>
+    <div class="container">
+        <div style="font-size: 1.2em; font-weight: 100; line-height: 1.5em;">
+            <p>
+                This is a directory of more than 5,000 Minecraft servers that I have found using a port scanner,
+                featured in
+                my video.
+                Note that it is a proof of concept and I had only scanned a few IP ranges, to not exhaust rate limits
+                and
+                avoid legal issues.
+                If you want to scan your own IP ranges, please download the project from
+                <a href="https://github.com/numenmc/mc-scanner">github.com/numenmc/mc-scanner</a>. If you do scan
+                0.0.0.0/0
+                and want to share the data,
+                contact me over at my <a href="https://discord.gg/UQTdkQTB44">discord server</a> and I might add it
+                here.
+            </p>
+            <p>
+                You can also download the raw data: <a href="/api.json">/api.json</a>
+            </p>
+            <p>
+                If your server is listed here, please ensure you have a whitelist or backups for your server. You can also
+                contact me to remove it from the list.
+            </p>
+            Navigate to a specific server by entering its ID below:
+        </div>
+        <div style="display: flex; gap: 1em;">
+            <sl-card class="card-basic" style="flex: 1;">
+                <div style="display: flex; gap: 1em;">
+                    <sl-input placeholder="Server#" style="flex: 1;" id="input-srv-id"></sl-input><sl-button
+                        onclick="navToServerId(document.getElementById('input-srv-id').value)">Go to</sl-button>
+                </div>
+            </sl-card>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2em;" class="list-result">
+            {% for server in servers %}
+            <sl-card class="card-header" id="server-{{ server.id }}">
+                <div slot="header" style="font-size: 2em;">
+                    <b style="margin-right: 1em;">#{{ server.id }}</b>
+                    <span style="font-weight: 100;">
+                        {{ server.host }}
+                    </span>
+                </div>
+                <div style="background-image: url(/dirt.png); border-radius: 5px; background-repeat: repeat;
+                    padding: 1em; height: 4.5em; font-family: Minecraft;
+                    white-space: pre-wrap;">{{ server.motd }}</div>
+                <div style="margin-top: 1em;">
+                    Retrieved <b>{{ server.fetch_time }}</b><br>
+                    Players online: <b>{{ server.online_players }}/{{ server.max_players }}</b><br>
+                    Version: <b>{{ server.version }} (Protocol {{ server.protocol }})</b><br>
+                </div>
+                <div style="display: flex; margin-top: 1em;">
+                    <div style="flex: 1;"></div>
+                    <sl-button onclick="showPlayerSample({{ server.id }})">Player Sample</sl-button>
+                </div>
+            </sl-card>
+            {% endfor %}
+        </div>
+        <div style="display: flex; gap: 0.5em; justify-content: center;">
+            {# First page #}
+            {% if page > 7 %}
+            <a href="/1.html"><sl-button size="medium">1</sl-button></a>
+            {% endif %}
+
+            {# Previous pages #}
+            <sl-button-group>
+                {% for i in range(page - 6, page) %}
+                {% if i > 0 %}
+                <a href="/{{ i }}.html"><sl-button size="medium">{{ i }}</sl-button></a>
+                {% endif %}
+                {% endfor %}
+            </sl-button-group>
+
+            {# Current page #}
+            <sl-button size="medium" disabled>{{ page }}</sl-button>
+
+            {# Next pages #}
+            <sl-button-group>
+                {% for i in range(page + 1, page + 7) %}
+                {% if i <= totalPages %} <a href="/{{ i }}.html"><sl-button size="medium">{{ i }}</sl-button></a>
+                    {% endif %}
+                    {% endfor %}
+            </sl-button-group>
+
+            {# Last page #}
+            {% if page + 6 < totalPages %} <a href="/{{ totalPages }}.html"><sl-button size="medium">{{ totalPages
+                    }}</sl-button></a>
+                {% endif %}
+        </div>
+    </div>
+
+    <script>
+        const dialog = document.querySelector('.dialog-player-sample');
+        const playerSample = dialog.querySelector('.dialog-player-sample-contents');
+
+        function showPlayerSample(serverId) {
+            const server = thisPageServerData.find(s => s.id === serverId);
+            const host = server.host;
+
+            dialog.setAttribute("label", `Player Sample for ${host}`);
+
+            // Clear previous contents
+            playerSample.innerHTML = '';
+
+            if (server.players.length === 0) {
+                playerSample.innerHTML = '<i>No players online at the time of fetching.</i>';
+            } else {
+                const ul = document.createElement('ul');
+                for (const player of server.players) {
+                    const li = document.createElement('li');
+                    li.innerHTML = `#${player.id} <b>${player.name}</b><br>${player.uuid}`;
+                    ul.appendChild(li);
+                }
+                playerSample.appendChild(ul);
+            }
+
+            dialog.show();
+        }
+    </script>
+</body>
+
+</html>
