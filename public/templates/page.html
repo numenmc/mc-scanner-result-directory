@@ -45,6 +45,10 @@
 </head>
 
 <body>
+    <script>
+        const thisPageServerData = {{ servers | dump | safe }};
+    </script>
+    
     <sl-dialog label="Player Sample" class="dialog-player-sample">
         <div class="dialog-player-sample-contents" style="display: flex; flex-direction: column;">
 
